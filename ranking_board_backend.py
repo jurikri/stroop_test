@@ -65,8 +65,10 @@ def msmain():
                     FN_vix = np.where(np.array(accuracy[gn])[:,0] == 'FN')[0]
                     FN_n = len(FN_vix)
                     FN_rts = np.array(np.array(accuracy[gn])[FN_vix,1], dtype=float)
-             
-                    acc = (TP_n + TN_n) / (TP_n + TN_n + FP_n + FN_n)
+                    
+                    if (TP_n + TN_n + FP_n + FN_n) != 0:
+                        acc = (TP_n + TN_n) / (TP_n + TN_n + FP_n + FN_n)
+                    else: acc = 0
                     
                     T_rt = np.nanmean(np.concatenate((TP_rts, TN_rts), axis=0))
                     F_rt = np.nanmean(np.concatenate((FP_rts, FN_rts), axis=0))
@@ -83,10 +85,11 @@ def msmain():
                     mssave_array[block_n, c, 1] = T_rt
                     mssave_array[block_n, c, 2] = F_rt
                     
+                mssave_array[0,:,0][np.isnan(mssave_array[0,:,0])] = 0
+                mssave_array[0,:,1:][np.isnan(mssave_array[0,:,1:])] = 2000
+                    
                 participant_data = np.reshape(mssave_array[0], (9,))
-                participant_data[np.isnan(participant_data)] = 0.4
-                
-        
+  
                 def metric_stroop(participant_data):
                      # 가중치 설정
                      accuracy_weights = np.array([100, 100, 150])  # 정확도에 대한 가중치
@@ -94,11 +97,13 @@ def msmain():
                      wrong_response_penalty = 1.2  # 오답에 대한 추가 패널티
                      # 정확도와 반응 시간을 별도로 계산
                      accuracy_scores = participant_data[[0, 3, 6]] * accuracy_weights
-                     response_time_scores = 1 / (participant_data[[1, 4, 7]] + participant_data[[2, 5, 8]] * wrong_response_penalty) * response_time_weights
+                     response_time_scores = 1 / \
+                         (participant_data[[1, 4, 7]] + participant_data[[2, 5, 8]] * \
+                          wrong_response_penalty) * response_time_weights
                      # 최종 점수 계산: 정확도 점수와 반응 시간 점수의 합산
                      final_score = (np.sum(accuracy_scores) * 3) + (np.sum(response_time_scores) * 1e5)
-                     final_score = np.round(final_score / 10, 3)
-                     # print(f"Final score: {final_score}")
+                     final_score = np.round(final_score / 10, 3) - 54
+                     print(f"Final score: {final_score}")
                      return final_score
                  
                 final_score = metric_stroop(participant_data)

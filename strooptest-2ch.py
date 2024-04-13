@@ -277,11 +277,11 @@ def msmain(arg1=None):
                     pickle.dump(msdict, file)
     
     #%%
-    initial_x, initial_y = pyautogui.position()
-    pyautogui.click(544, 15) ;time.sleep(1)
-    pyautogui.move(initial_x, initial_y, duration=0)
+    # initial_x, initial_y = pyautogui.position()
+    # pyautogui.click(544, 15) ;time.sleep(1)
+    # pyautogui.move(initial_x, initial_y, duration=0)
     
-    time.sleep(5)
+    # time.sleep(5)
     
     # x, y = 130, 67
     # pyautogui.FAILSAFE = False
@@ -290,7 +290,7 @@ def msmain(arg1=None):
     # pyautogui.click(x, y)
     # pyautogui.move(initial_x, initial_y, duration=0)
 
-    import pygame
+    # import pygame
     from screeninfo import get_monitors
     import win32gui
     import win32con
