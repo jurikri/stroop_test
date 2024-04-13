@@ -5,7 +5,35 @@ Created on Tue Feb 13 10:53:04 2024
 @author: PC
 """
 
-def msmain(arg1):
+import pygetwindow as gw
+import pygame
+import pyautogui
+
+def get_secondary_monitor():
+    """
+    보조 모니터의 위치와 크기를 반환합니다.
+    만약 보조 모니터가 없다면 None을 반환합니다.
+    """
+    screens = pyautogui.getScreenSize()
+    primary_screen = screens[0]  # 주 모니터는 항상 첫 번째에 위치함을 가정
+
+    for screen in screens[1:]:  # 첫 번째 모니터를 제외한 나머지 모니터 탐색
+        if screen != primary_screen:
+            return screen
+    return None
+
+def set_pygame_window_position(x, y, width, height):
+    """
+    Pygame window의 위치와 크기를 설정합니다.
+    """
+    import win32gui
+    import win32con
+
+    hwnd = pygame.display.get_wm_info()["window"]
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, x, y, width, height, 0)
+
+
+def msmain(arg1=None):
     #%%
     import subprocess
     import pkg_resources
@@ -35,36 +63,28 @@ def msmain(arg1):
     from datetime import datetime
     import os
     import pickle
+    current_path = os.getcwd()
+    from datetime import datetime
 
-    def create_trial_folder(arg1):
-        base_path_template = f"C:/Users/msbak/Desktop/eeg_saves/{arg1}_trial_"
-        trial_num = 1
-    
-        while True:
-            trial_path = f"{base_path_template}{trial_num}"
-            if not os.path.exists(trial_path):
-                os.makedirs(trial_path)
-                break
-            trial_num += 1
-        return trial_path, trial_num
-
-    # # Use the function
-    # arg1 = "experiment_name"  # Example argument
-    base_path, trial_num = create_trial_folder(arg1)
-    print("Base path set to:", base_path)
+    # base_path, trial_num = create_trial_folder(arg1)
+    # print("Base path set to:", base_path)
 
         
     # Create block directories
+    current_path = os.getcwd()
+    now = datetime.now()
+    filename = now.strftime("%Y%m%d%H%M")
+    base_path_template = current_path + '\\saved_data\\' + filename
+    if not os.path.exists(base_path_template):
+        os.makedirs(base_path_template)
+    
     block_paths = []
     for i in range(1, 3):  # 1 to 8
-        block_path = os.path.join(base_path, f"block{i}")
+        block_path = os.path.join(base_path_template, f"block{i}")
         block_paths.append(block_path)
         if not os.path.exists(block_path):
             os.makedirs(block_path)
-                   
-    ##
-
-    
+ 
     # Define colors
     colors = {
         "빨강": (255, 0, 0),
@@ -75,51 +95,16 @@ def msmain(arg1):
         "하양": (255, 255, 255)
     }
    
-    W, H = 1920, 1080
-    FONT_SZ = int(round(46*(W/800)))
+    W, H = 1080, 1920
+    FONT_SZ = int(round(46*(H/800)))
 
-    # def run_predisp():
-    #     pygame.event.clear()
-
-    #     # top_word, top_color, bottom_word, is_correct = trial
-
-    #     # Clear screen for new trial
-    #     screen.fill(colors["하양"])
-
-    #     # Display the top word in its color
-    #     # font = pygame.font.SysFont(None, FONT_SZ)
-    #     font = pygame.font.SysFont('malgungothic', FONT_SZ)
-    #     top_text = font.render('1111', True, colors["하양"])
-    #     top_rect = top_text.get_rect(center=(W/2, int(H/2 - (H*(1/12)))))  # Centered, adjusted for top position
-    #     screen.blit(top_text, top_rect)
-
-    #     pygame.display.flip()
-
-    #     # Introduce a time gap before displaying the bottom word
-    #     pygame.time.wait(100)  # 100 milliseconds gap as an example
-        
-    #     # Now display the bottom word (color name) in black
-    #     bottom_text = font.render('1111', True, colors["하양"])
-    #     bottom_rect = bottom_text.get_rect(center=(W/2, int(H/2 + (H*(1/12)))))  # Centered, adjusted for bottom position
-    #     screen.blit(bottom_text, bottom_rect)
-
-    #     pygame.display.flip()
-
-        # Timing and response handling starts after displaying the bottom word
-        # start_time = pygame.time.get_ticks()
-        # response_made = False
-        # response = None
-    
     def run_baseline(duration=10 * 1000):  # Default duration set to 30 seconds -> 30으로 추후 수정
         screen.fill(colors["하양"])
-        # font = pygame.font.SysFont(None, FONT_SZ)
-        # font = pygame.font.SysFont('NanumGothic', FONT_SZ)
         font = pygame.font.SysFont('malgungothic', FONT_SZ)
         text = font.render("+", True, colors["검정"])  # Using "+" as a fixation dot
         rect = text.get_rect(center=(int(W/2), int(H/2)))
         screen.blit(text, rect)
         pygame.display.flip()
-        # Wait for the specified duration
         pygame.time.wait(duration)
     
     # Pre-generate stimuli
@@ -320,9 +305,7 @@ def msmain(arg1):
                 with open(full_path, 'wb') as file:
                     pickle.dump(msdict, file)
     
-    
     #%%
-
     initial_x, initial_y = pyautogui.position()
     pyautogui.click(544, 15) ;time.sleep(1)
     pyautogui.move(initial_x, initial_y, duration=0)
@@ -336,10 +319,25 @@ def msmain(arg1):
     pyautogui.click(x, y)
     pyautogui.move(initial_x, initial_y, duration=0)
     click_start_time = time.time()
-    # pyautogui.move(initial_x, initial_y, duration=0)
-    # pyautogui.click(initial_x, initial_y)
+
     pygame.init()
     screen = pygame.display.set_mode((W, H), pygame.FULLSCREEN)
+    
+    # Pygame 초기화
+    pygame.init()
+    
+    # 보조 모니터의 위치와 크기를 얻습니다.
+    secondary_monitor = get_secondary_monitor()
+    if secondary_monitor is not None:
+        x, y, width, height = secondary_monitor
+        # Pygame window를 보조 모니터에 맞춰서 설정
+        screen = pygame.display.set_mode((width, height), pygame.NOFRAME)  # 창 테두리 없음
+        set_pygame_window_position(x, y, width, height)
+    else:
+        print("보조 모니터가 감지되지 않았습니다. 주 모니터에서 실행합니다.")
+        screen = pygame.display.set_mode((800, 600))  # 기본 해상도로 설정
+    
+    
     # run_predisp()
     
     run_baseline(duration=1)
@@ -364,14 +362,14 @@ def msmain(arg1):
     # display_start_screen()
     for block_n in range(2):
         # stimuli_selected = 카드랜덤배정()
-        cn = (trial_num-1)*2 + block_n + 1
-        psave2 = r'C:\\mscode\\cardsets\\cardset' + str(cn) + '.pkl'
+        cn = block_n + 1
+        if arg1 == 1: cn += 2
+        if arg1 == 2: cn += 4
+            
+        psave2 = os.getcwd() + '\\cardsets\\cardset' + str(cn) + '.pkl'
         with open(psave2, 'rb') as file:
             stimuli_selected = pickle.load(file)
 
-        # pygame_window = gw.getWindowsWithTitle('pygame window')[0]  # 첫 번째 일치하는 윈도우
-        # pygame_window.activate()
-        # display_start_screen()
         run_baseline(duration=1000 * 10)
         run_block(stimuli_selected, savepath=block_paths[block_n], click_start_time=click_start_time)
     run_baseline()
@@ -379,9 +377,6 @@ def msmain(arg1):
 
 
 #%%
-
-# msmain('mstest')
-
 
 #%%
 import sys
