@@ -75,10 +75,10 @@ def msmain(arg1=None):
     W, H = 1080, 1920
     FONT_SZ = int(round(46*(H/800)))
 
-    def run_baseline(duration=10 * 1000):  # Default duration set to 30 seconds -> 30으로 추후 수정
+    def run_baseline(duration=10 * 1000, disp="+"):  # Default duration set to 30 seconds -> 30으로 추후 수정
         screen.fill(colors["하양"])
         font = pygame.font.SysFont('malgungothic', FONT_SZ)
-        text = font.render("+", True, colors["검정"])  # Using "+" as a fixation dot
+        text = font.render(disp, True, colors["검정"])  # Using "+" as a fixation dot
         rect = text.get_rect(center=(int(W/2), int(H/2)))
         screen.blit(text, rect)
         pygame.display.flip()
@@ -249,10 +249,8 @@ def msmain(arg1=None):
                 # 남은 대기 시간만큼 대기
                 if remaining_time > 0:
                     pygame.time.wait(remaining_time)
-                
-                
-                save_time = time.time() # msdict 저장하기 바로 전 시간 기록
 
+                # save_time = time.time() # msdict 저장하기 바로 전 시간 기록
                 msdict = {
                     'Condition': condition,
                     'Top Word': top_word,
@@ -266,7 +264,13 @@ def msmain(arg1=None):
                     'cue_time_stamp': cue_time_stamp
                     # 'nonvalid_click_time': nonvalid_click_time_saves
                 }
-                print('Correct', msdict['Correct']==msdict['Response'], 'Response Time', msdict['Response Time'])
+                
+                if msdict['Correct'] and msdict['Response']=='Yes': iscorrect = '맞음'
+                elif not(msdict['Correct']) and msdict['Response']=='No': iscorrect = '맞음'
+                elif msdict['Response'] is None: iscorrect = '응답 안함'
+                else: iscorrect = '틀림'
+ 
+                print('Correct', iscorrect, 'Response Time', msdict['Response Time'])
 
                 base_path = savepath
                 filename = datetime.now().strftime("%Y%m%d_%H%M%S_stroopdata.pkl")
@@ -277,19 +281,6 @@ def msmain(arg1=None):
                     pickle.dump(msdict, file)
     
     #%%
-    # initial_x, initial_y = pyautogui.position()
-    # pyautogui.click(544, 15) ;time.sleep(1)
-    # pyautogui.move(initial_x, initial_y, duration=0)
-    
-    # time.sleep(5)
-    
-    # x, y = 130, 67
-    # pyautogui.FAILSAFE = False
-    # print(initial_x, initial_y)
-    # initial_x, initial_y = pyautogui.position()
-    # pyautogui.click(x, y)
-    # pyautogui.move(initial_x, initial_y, duration=0)
-
     # import pygame
     from screeninfo import get_monitors
     import win32gui
@@ -313,7 +304,7 @@ def msmain(arg1=None):
         set_window_position(secondary_monitor.x, secondary_monitor.y, secondary_monitor.width, secondary_monitor.height)
     else:
         print("보조 모니터가 감지되지 않았습니다. 기본 설정으로 실행합니다.")
-        screen = pygame.display.set_mode((800, 600))
+        screen = pygame.display.set_mode((1800, 1200))
         
     run_baseline(duration=1)
     def wait_screen():
@@ -424,7 +415,8 @@ def msmain(arg1=None):
 
         run_baseline(duration=1000 * 10)
         run_block(stimuli_selected, savepath=block_paths[block_n], msid=msid)
-    run_baseline()
+        
+    run_baseline(duration=3 * 1000, disp="테스트 끝!")
     pygame.quit()
 
 
