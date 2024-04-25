@@ -292,7 +292,20 @@ def msmain(arg1=None):
         """
         hwnd = pygame.display.get_wm_info()['window']
         win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, x, y, width, height, win32con.SWP_NOZORDER)
-        
+    
+    
+    import pyautogui
+    import time
+    
+    # for _ in range(10):
+    #     time.sleep(0.5)
+    #     x, y = pyautogui.position()
+    #     print(f"Current mouse position is: {x}, {y}")
+    
+    initial_x, initial_y = pyautogui.position()
+    pyautogui.click(134, 63) ;time.sleep(1)
+    pyautogui.move(initial_x, initial_y, duration=0)
+
 
     pygame.init()
     monitors = get_monitors()

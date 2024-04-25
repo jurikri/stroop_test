@@ -157,7 +157,7 @@ def main():
             font = pygame.font.Font(font_path, 45)
             
             
-            guide_text = font.render("색깔 맞추고 귀여운 인형을! 지금 도전하세요!", True, (154, 164, 174))
+            guide_text = font.render("색깔을 맞추고 선물을! 지금 도전하세요!", True, (154, 164, 174))
             text_rect = guide_text.get_rect(center=(int(width/2), 60))  # 텍스트의 위치를 화면 중앙으로 설정
             screen.blit(guide_text, text_rect)  # 텍스트를 화면에 그립니다.
             
